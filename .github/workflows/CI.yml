@@ -28,6 +28,12 @@ jobs:
           - x64
     steps:
       - uses: actions/checkout@v4
+      # NGCLearn depends on NGCSimLib via a `[sources]` path dev-link
+      # (`../NGCSimLib`). CI checks out only this repo, so clone the sibling
+      # next to it before instantiation. NGCSimLib is not yet registered;
+      # revisit (registry / git-rev source) once it is published.
+      - name: Clone NGCSimLib (path [sources] dependency)
+        run: git clone --depth 1 https://github.com/CognitiveSubstratesAI/NGCSimLib.git ../NGCSimLib
       - uses: julia-actions/setup-julia@v2
         with:
           version: ${{ matrix.version }}
