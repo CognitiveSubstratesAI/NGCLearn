@@ -40,6 +40,10 @@ include("components/neurons/graded/rate_cell.jl")
 include("components/synapses/dense_synapse.jl")
 include("components/synapses/hebbian_synapse.jl")
 
+# ── Models ───────────────────────────────────────────────────────────────────
+# Composed networks built from the component zoo.
+include("models/pcn.jl")
+
 # ── Exports ──────────────────────────────────────────────────────────────────
 export NGCLEARN_VERSION
 
@@ -63,5 +67,8 @@ export sgd_init, sgd_step, adam_init, adam_step,
 export LIFCell,
     GaussianErrorCell, RateCell, DenseSynapse,
     HebbianSynapse, compute_update!, evolve!
+
+# Models
+export PCN, process!, project
 
 end # module NGCLearn
