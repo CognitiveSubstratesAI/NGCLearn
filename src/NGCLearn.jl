@@ -20,6 +20,8 @@ const NGCLEARN_VERSION = v"0.1.0"
 # ── Utilities ──────────────────────────────────────────────────────────────────
 # Differential-equation integration backend (Euler/RK1, midpoint/RK2, ...).
 include("utils/diffeq/ode_utils.jl")
+# Activations + thresholds (identity/tanh/relu/sigmoid + threshold_{soft,cauchy})
+include("utils/model_utils.jl")
 
 # ── Component base ───────────────────────────────────────────────────────────
 # Abstract base for every Jax-derived cell/synapse. Mirrors upstream
@@ -31,6 +33,9 @@ include("components/jax_component.jl")
 include("components/neurons/spiking/lif_cell.jl")
 # Graded (rate-coded / error) neurons
 include("components/neurons/graded/gaussian_error_cell.jl")
+include("components/neurons/graded/rate_cell.jl")
+# Synapses
+include("components/synapses/dense_synapse.jl")
 
 # ── Exports ──────────────────────────────────────────────────────────────────
 export NGCLEARN_VERSION
@@ -38,10 +43,16 @@ export NGCLEARN_VERSION
 # Integration backend
 export get_integrator_code, step_euler, step_rk2
 
+# Activation + threshold helpers
+export create_function,
+    relu, sigmoid,
+    d_identity, d_tanh, d_relu, d_sigmoid,
+    threshold_soft, threshold_cauchy
+
 # Component base + shared verbs
 export JaxComponent, advance_state!, reset_state!, make_prng_key
 
 # Components
-export LIFCell, GaussianErrorCell
+export LIFCell, GaussianErrorCell, RateCell, DenseSynapse
 
 end # module NGCLearn

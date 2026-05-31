@@ -8,4 +8,6 @@ using Test
     include("test_ode_utils.jl")
     include("test_lif_cell.jl")
     include("test_gaussian_error_cell.jl")
+    include("test_rate_cell.jl")
+    include("test_dense_synapse.jl")
 end
