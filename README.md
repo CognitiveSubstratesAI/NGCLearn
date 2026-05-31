@@ -1,5 +1,12 @@
 # NGCLearn.jl
 
+[![CI](https://github.com/CognitiveSubstratesAI/NGCLearn/actions/workflows/CI.yml/badge.svg)](https://github.com/CognitiveSubstratesAI/NGCLearn/actions/workflows/CI.yml)
+[![Docs (stable)](https://img.shields.io/badge/docs-stable-blue.svg)](https://cognitivesubstratesai.github.io/NGCLearn/stable/)
+[![Docs (dev)](https://img.shields.io/badge/docs-dev-blue.svg)](https://cognitivesubstratesai.github.io/NGCLearn/dev/)
+[![Code Style: Blue](https://img.shields.io/badge/code%20style-blue-4495d1.svg)](https://github.com/invenia/BlueStyle)
+[![ColPrac](https://img.shields.io/badge/ColPrac-Contributor's%20Guide-blueviolet)](https://github.com/SciML/ColPrac)
+[![License: BSD-3-Clause](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
+
 A Julia port of [NACLab's ngc-learn](https://github.com/NACLab/ngc-learn) — the
 biophysical component zoo (spiking + graded neurons, synapses, encoders) for
 building neurobiologically-plausible / predictive-coding models.
