@@ -89,14 +89,20 @@ function PCN(;
     eta::Real=0.001,
     wlb::Real=-0.3,
     wub::Real=0.3,
-    key::Union{Integer, Nothing}=nothing
+    key::Union{Integer, Nothing}=nothing,
+    name::AbstractString="Circuit"
 )
     optim_type = "adam"
     winit = ("uniform", Float64(wlb), Float64(wub))
     k = key === nothing ? 0 : Int(key)
 
+    # Each PCN owns its own Context namespace. `NGCSimLib.Context` REUSES an
+    # existing context of the same name (faithful upstream behavior), so two
+    # PCNs sharing a name would share global-state slots and contaminate each
+    # other. Default "Circuit" matches pcn_model.py; pass a distinct `name` to
+    # build independent models in one process (e.g. across tests).
     local model
-    NGCSimLib.Context("Circuit") do _ctx
+    NGCSimLib.Context(name) do _ctx
         # ── Generative / forward network ─────────────────────────────────────
         z0 = RateCell(; name="z0", n_units=in_dim, tau_m=0.0, act_fx="identity")
         z1 = RateCell(; name="z1", n_units=hid1_dim, tau_m=tau_m, act_fx=act_fx,

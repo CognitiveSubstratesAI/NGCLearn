@@ -79,9 +79,12 @@ end
         @test sum(abs, y_mu) > 0.0   # forward path actually propagates (not zeros)
     end
 
-    @testset "weight tying: E = Wᵀ, Q = W after a step" begin
+    @testset "weight tying: E = Wᵀ, Q = W (no M-step)" begin
+        # Tie holds when no weight update runs (adapt=false). With adapt=true the
+        # M-step evolve! moves W AFTER the tie, so E/Q intentionally diverge from
+        # the post-update W — hence this checks the projection-only path.
         m = PCN(; in_dim=4, out_dim=2, hid1_dim=8, hid2_dim=6, T=10, key=7, name="tie")
-        process!(m, _PCN_X[1], _PCN_Y[1])
+        process!(m, _PCN_X[1], _PCN_Y[1]; adapt=false)
         @test get_value(m.E3.weights) ≈ permutedims(get_value(m.W3.weights))
         @test get_value(m.Q3.weights) ≈ get_value(m.W3.weights)
         @test size(get_value(m.E3.weights)) == (m.out_dim, m.hid2_dim)
