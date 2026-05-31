@@ -22,6 +22,8 @@ const NGCLEARN_VERSION = v"0.1.0"
 include("utils/diffeq/ode_utils.jl")
 # Activations + thresholds (identity/tanh/relu/sigmoid + threshold_{soft,cauchy})
 include("utils/model_utils.jl")
+# Gradient-style optimizers (SGD + Adam) — consumed by HebbianSynapse.
+include("utils/optim/optim.jl")
 
 # ── Component base ───────────────────────────────────────────────────────────
 # Abstract base for every Jax-derived cell/synapse. Mirrors upstream
@@ -36,6 +38,7 @@ include("components/neurons/graded/gaussian_error_cell.jl")
 include("components/neurons/graded/rate_cell.jl")
 # Synapses
 include("components/synapses/dense_synapse.jl")
+include("components/synapses/hebbian_synapse.jl")
 
 # ── Exports ──────────────────────────────────────────────────────────────────
 export NGCLEARN_VERSION
@@ -52,7 +55,13 @@ export create_function,
 # Component base + shared verbs
 export JaxComponent, advance_state!, reset_state!, make_prng_key
 
+# Optimizers
+export sgd_init, sgd_step, adam_init, adam_step,
+    get_opt_init_fn, get_opt_step_fn
+
 # Components
-export LIFCell, GaussianErrorCell, RateCell, DenseSynapse
+export LIFCell,
+    GaussianErrorCell, RateCell, DenseSynapse,
+    HebbianSynapse, compute_update!, evolve!
 
 end # module NGCLearn

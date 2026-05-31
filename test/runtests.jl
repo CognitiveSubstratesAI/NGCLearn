@@ -10,4 +10,6 @@ using Test
     include("test_gaussian_error_cell.jl")
     include("test_rate_cell.jl")
     include("test_dense_synapse.jl")
+    include("test_optim.jl")
+    include("test_hebbian_synapse.jl")
 end
