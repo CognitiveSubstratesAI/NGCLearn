@@ -144,6 +144,38 @@ verb and reads unambiguously. Process steps reference these by symbol
 
 ---
 
+## 7. Composed networks live in `src/models/` — and must setup-before-wire
+
+Date: 2026-05-31
+
+Multi-component networks (first: `PCN`, the pc_discrim exhibit) live in
+`src/models/<name>.jl` as a plain `mutable struct` holding the component graph
+plus a driver (`process!`). They are NOT `JaxComponent`s — they compose
+components, they aren't one. The model builds its graph inside a
+`NGCSimLib.Context`, drives components eagerly (hand-ordered `advance_state!`),
+and preserves upstream's advance/reset/project orderings exactly (see `pcn.jl`
+`_advance!`/`_project!`). We do not use `MethodProcess`/`compile_process!`: the
+Reactant-JIT path can't yet trace scalar-hyperparameter components (§4), and the
+eager loop is the ground-truth oracle.
+
+**CRITICAL — setup-before-wire.** Every compartment must be `post_init!`-ed
+(which assigns its global-state root key) BEFORE any `>>` wiring. `wire!`
+snapshots the SOURCE compartment's `target` key at call time (mirrors upstream
+`__rrshift__`, compartment.py:150-165). If you wire before setup, the source's
+target is still `nothing`, the wire copies `nothing`, and the dest's later
+`setup!` points it at its own slot — silently severing the connection. Symptom:
+the whole forward path reads zeros and nothing learns (cost a full
+write-commit-revert cycle on 2026-05-31 before reading upstream). Upstream gets
+correct ordering for free because its metaclass runs `_setup` at construction;
+in Julia we order it by hand: construct all → `post_init!` all → THEN `>>`.
+`test/test_pcn_integration.jl` has a "wires are live" testset guarding this.
+
+Weight tying (`Q = W`, `E = Wᵀ`) and latent seeding use explicit
+`get_value`/`set!` in `process!`, re-applied each sample — faithful to upstream's
+`PCN.process` (pcn_model.py:320-346). Acceptance is a deterministic learnability
+test (error collapses >10×, trained net classifies the set), with every asserted
+number OBSERVED from a real run first — never an aspirational threshold.
+
 ## Decision update policy
 
 Same as NGCSimLib: update when a decision affects more than one file or would
