@@ -41,6 +41,32 @@ jobs:
       - uses: julia-actions/cache@v2
       - uses: julia-actions/julia-buildpkg@v1
       - uses: julia-actions/julia-runtest@v1
+        env:
+          # Skip the Reactant/XLA JIT integration test on every-push CI: each
+          # `@compile` is a full XLA compilation, and tracing the whole zoo runs
+          # ~30+ min — past this job's timeout. The 299 correctness tests still
+          # run here; JIT equivalence is verified on demand (locally, or the
+          # `jit` workflow_dispatch job below). See test/test_jit_integration.jl.
+          NGCLEARN_SKIP_JIT: '1'
+
+  jit:
+    name: JIT integration (Reactant, on-demand)
+    # Heavy XLA tracing — only on manual dispatch, not every push.
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - name: Clone NGCSimLib (path [sources] dependency)
+        run: git clone --depth 1 https://github.com/CognitiveSubstratesAI/NGCSimLib.git ../NGCSimLib
+      - uses: julia-actions/setup-julia@v2
+        with:
+          version: '1.12'
+      - uses: julia-actions/cache@v2
+      - uses: julia-actions/julia-buildpkg@v1
+      - uses: julia-actions/julia-runtest@v1
+        env:
+          NGCLEARN_SKIP_JIT: '0'
 
   format:
     name: Format (Blue)

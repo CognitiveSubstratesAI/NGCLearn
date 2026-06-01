@@ -60,4 +60,61 @@ else
         @test Array(out_j["jit:L:v"]) == Array(eager_v)
         @test Array(out_j["jit:L:s"]) == Array(eager_s)
     end
+
+    # Whole-zoo coverage: every component's @compilable advance_state! must
+    # trace through Reactant.@compile AND match the eager-spliced result. Each
+    # case = (label, build, drive!, kwargs Dict, compartment-key to compare).
+    # Drive values are arbitrary but fixed; we assert JIT == eager, not specific
+    # numbers (the per-component value semantics are covered by their unit tests).
+    _zoo = [
+        ("RateCell", () -> RateCell(; name="c", n_units=3, tau_m=10.0, act_fx="tanh"),
+            c -> set!(c.j, [1.0 2.0 3.0]), Dict(:dt => 1.0), "z"),
+        ("GaussianErrorCell", () -> GaussianErrorCell(; name="c", n_units=3),
+            c -> (set!(c.mu, [0.0 0.0 0.0]); set!(c.target, [1.0 2.0 3.0])),
+            Dict(:dt => 1.0), "dmu"),
+        ("DenseSynapse",
+            () -> DenseSynapse(; name="c", shape=(3, 2),
+                weight_init=("constant", 0.5), key=1),
+            c -> set!(c.inputs, [1.0 2.0 3.0]), Dict{Symbol, Float64}(), "outputs"),
+        ("PoissonCell",
+            () -> PoissonCell(; name="c", n_units=4, target_freq=50.0, key=1),
+            c -> set!(c.inputs, [0.5 0.5 0.5 0.5]), Dict(:t => 1.0, :dt => 1.0),
+            "outputs"),
+        ("VarTrace",
+            () -> VarTrace(; name="c", n_units=3, tau_tr=20.0, a_delta=1.0),
+            c -> set!(c.inputs, [1.0 0.0 1.0]), Dict(:dt => 1.0), "trace"),
+        ("TraceSTDPSynapse",
+            () -> TraceSTDPSynapse(; name="c", shape=(3, 2), A_plus=1e-2,
+                A_minus=1e-4, weight_init=("constant", 0.1), key=1),
+            c -> set!(c.inputs, [1.0 2.0 3.0]), Dict{Symbol, Float64}(), "outputs")
+    ]
+
+    @testset "JIT coverage: $label traces + matches eager" for (
+            label, build, drive!, kw, readkey
+        ) in _zoo
+
+        ctxname = "jitcov_" * label
+        Context(ctxname) do _ctx
+            c = build()
+            post_init!(c)
+            drive!(c)
+            p = MethodProcess(; name="step")
+            p >> (c, :advance_state!)
+            post_init!(p)
+        end
+        ctx = get_context(ctxname)
+        p = get_processes(ctx)["step"]
+        cell = get_components(ctx)["c"]
+
+        compile_process!(p)
+        out_e, _ = run(p; kw...)
+        eager = copy(Array(out_e["$ctxname:c:$readkey"]))
+
+        reset_state!(cell)
+        drive!(cell)
+        sample_args = Any[kw[k] for k in p.keyword_order]
+        compile_with_reactant!(p, copy(get_state()), sample_args)
+        out_j, _ = run(p; kw...)
+        @test Array(out_j["$ctxname:c:$readkey"]) == eager
+    end
 end

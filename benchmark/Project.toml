@@ -1,0 +1,9 @@
+[deps]
+NGCLearn = "b95dbb59-f915-4a7f-a7c7-3c25ef636df4"
+NGCSimLib = "8f3a9b1c-2d7e-4f5a-9c2b-1e6f8a3d4b9c"
+Reactant = "3c362404-f566-11ee-1572-e11a4b42c853"
+InteractiveUtils = "b77e0a4c-d291-57a0-90e8-8db25a27a240"
+
+[sources]
+NGCLearn = {path = ".."}
+NGCSimLib = {path = "../../NGCSimLib"}
