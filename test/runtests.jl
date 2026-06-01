@@ -16,4 +16,5 @@ using Test
     include("test_var_trace.jl")
     include("test_trace_stdp_synapse.jl")
     include("test_pcn_integration.jl")
+    include("test_dc_snn_integration.jl")
 end

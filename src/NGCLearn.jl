@@ -45,6 +45,7 @@ include("components/input_encoders/poisson_cell.jl")
 # Other functional nodes (traces, kernels)
 include("components/other/var_trace.jl")
 include("models/pcn.jl")
+include("models/dc_snn.jl")
 
 # ── Exports ──────────────────────────────────────────────────────────────────
 export NGCLEARN_VERSION
@@ -56,7 +57,8 @@ export get_integrator_code, step_euler, step_rk2
 export create_function,
     relu, sigmoid,
     d_identity, d_tanh, d_relu, d_sigmoid,
-    threshold_soft, threshold_cauchy
+    threshold_soft, threshold_cauchy,
+    normalize_matrix
 
 # Component base + shared verbs
 export JaxComponent, advance_state!, reset_state!, make_prng_key
@@ -71,5 +73,6 @@ export LIFCell,
     HebbianSynapse, compute_update!, evolve!,
     PoissonCell, VarTrace, TraceSTDPSynapse
 export PCN, process!, project
+export DC_SNN, norm!
 
 end # module NGCLearn

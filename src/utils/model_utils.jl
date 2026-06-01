@@ -116,3 +116,30 @@ function create_function(fun_name::AbstractString)
         error("Activation function ($fun_name) is not recognized/supported!")
     end
 end
+
+# ── Matrix normalization ─────────────────────────────────────────────────────
+
+"""
+    normalize_matrix(data, wnorm; order=1, axis=1) -> Matrix
+
+Rescale each vector span of `data` to have target norm `wnorm`. Mirrors
+`normalize_matrix` (model_utils.py:157-185).
+
+  - `order=1` → L1 norm (default); `order=2` → L2 norm.
+  - `axis=1` normalizes each COLUMN (upstream `axis=0`, NumPy row-axis); `axis=2`
+    normalizes each ROW. (Julia's `dims` is 1-based and transposed relative to
+    NumPy's `axis`, so the DC-SNN call `axis=0` ⇒ per-column ⇒ `axis=1` here.)
+
+A small floor (1e-8) prevents division by zero for all-zero spans.
+"""
+function normalize_matrix(
+    data::AbstractMatrix, wnorm::Real; order::Integer=1, axis::Integer=1
+)
+    dims = axis == 1 ? 1 : 2
+    if order == 2
+        denom = max.(sqrt.(sum(abs2, data; dims=dims)), 1e-8)
+    else
+        denom = max.(sum(abs, data; dims=dims), 1e-8)
+    end
+    return data .* (wnorm ./ denom)
+end

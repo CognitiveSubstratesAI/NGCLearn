@@ -17,11 +17,40 @@
 # this keeps the synapse constructor's `weight_init=("uniform", 0.025, 0.8)`
 # form 1:1 with upstream `weight_init=DistributionGenerator.uniform(0.025, 0.8)`.
 
+# Apply an optional structural modifier to a freshly-initialized matrix.
+# Mirrors the `hollow` / `eye` branches of upstream `_process_params_jax`
+# (distribution_generator.py:330-334):
+#   :hollow → (1 - I) ⊙ A  (zero the diagonal)
+#   :eye    → I ⊙ A         (keep only the diagonal)
+function _apply_structure(ary::AbstractMatrix, mod::Symbol)
+    size(ary, 1) == size(ary, 2) ||
+        error("_apply_structure: `:$mod` requires a square matrix, got $(size(ary))")
+    out = copy(ary)
+    if mod === :hollow          # zero the diagonal: (1 - I) ⊙ A
+        for i in axes(out, 1)
+            out[i, i] = zero(eltype(out))
+        end
+    elseif mod === :eye         # keep only the diagonal: I ⊙ A
+        diag = [out[i, i] for i in axes(out, 1)]
+        fill!(out, zero(eltype(out)))
+        for i in axes(out, 1)
+            out[i, i] = diag[i]
+        end
+    else
+        error("_apply_structure: unknown modifier `$mod` (supported: :hollow, :eye)")
+    end
+    return out
+end
+_apply_structure(ary, ::Nothing) = ary
+
 """
     _init_array(shape, rng, init) -> Array
 
 Initialize an array of given `shape` using the named distribution `init` of the
 form `("uniform", amin, amax)`, `("gaussian", mu, sigma)`, or `("constant", c)`.
+A `("constant", c, :hollow)` / `("constant", c, :eye)` 3-tuple additionally zeros
+the diagonal / keeps only the diagonal (square matrices; mirrors upstream's
+`constant(value, hollow=True)` / `constant(value, eye=True)`).
 Mirrors the call surface of upstream's `DistributionGenerator.*` constructors.
 """
 function _init_array(shape::Tuple, rng, init)
@@ -36,7 +65,9 @@ function _init_array(shape::Tuple, rng, init)
         return randn(rng, Float64, shape...) .* sigma .+ mu
     elseif name == "constant"
         c = Float64(init[2])
-        return fill(c, shape...)
+        ary = fill(c, shape...)
+        modifier = length(init) >= 3 ? init[3] : nothing
+        return _apply_structure(ary, modifier)
     else
         error(
             "_init_array: unsupported distribution `$name` " *
