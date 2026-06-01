@@ -14,5 +14,6 @@ using Test
     include("test_hebbian_synapse.jl")
     include("test_poisson_cell.jl")
     include("test_var_trace.jl")
+    include("test_trace_stdp_synapse.jl")
     include("test_pcn_integration.jl")
 end
