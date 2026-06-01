@@ -118,7 +118,14 @@ function DC_SNN(;
     return model
 end
 
-# L1-normalize W1 columns to wNorm (dcsnn_model.py:197-198).
+"""
+    norm!(m::DC_SNN) -> DC_SNN
+
+Rescale each column of the feedforward weight matrix `W1` to L1-norm `m.wNorm`
+(78.4 by default). Called at the end of [`process!`](@ref) when adapting, to
+keep total incoming weight per excitatory unit bounded — the homeostatic
+constraint of Diehl & Cook (2015). Mirrors `DC_SNN.norm` (dcsnn_model.py:197-198).
+"""
 function norm!(m::DC_SNN)
     W = NGCSimLib.get_value(m.W1.weights)
     NGCSimLib.set!(m.W1.weights, normalize_matrix(W, m.wNorm; order=1, axis=1))

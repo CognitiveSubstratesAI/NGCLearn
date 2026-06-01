@@ -53,6 +53,27 @@ implying a relationship to any `Base` verb and to carry the mutating `!`.)
 function reset_state! end
 
 """
+    evolve!(c::JaxComponent, args...)
+
+Apply one learning update to a plastic synapse, mutating its `weights` (and,
+where applicable, `biases`) in place. Each plastic synapse defines its own
+method: `evolve!(::HebbianSynapse, dt)` runs a 2-factor Hebbian step through an
+embedded optimizer; `evolve!(::TraceSTDPSynapse)` applies the trace-STDP rule
+with decay + clipping. Components without plasticity do not define `evolve!`.
+"""
+function evolve! end
+
+"""
+    compute_update!(c::JaxComponent)
+
+Compute a synapse's weight/bias deltas from its current pre/post signals and
+write them into the `dWeights`/`dBiases` compartments — WITHOUT stepping the
+parameters (that is [`evolve!`](@ref)'s job). Currently defined for
+`HebbianSynapse`.
+"""
+function compute_update! end
+
+"""
     make_prng_key(seed::Union{Integer,Nothing}=nothing) -> UInt64
 
 Produce a PRNG seed for a component's `key` compartment. With `nothing`, draws a

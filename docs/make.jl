@@ -20,6 +20,9 @@ makedocs(;
             "Installation" => "getting_started/installation.md",
             "Quickstart" => "getting_started/quickstart.md"
         ],
+        "Components" => "components.md",
+        "Models" => "models.md",
+        "Architecture & Design" => "architecture.md",
         "API Reference" => "api/index.md"
     ],
     warnonly=[:missing_docs, :cross_references]
