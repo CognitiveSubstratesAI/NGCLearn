@@ -50,7 +50,8 @@ Initialize an array of given `shape` using the named distribution `init` of the
 form `("uniform", amin, amax)`, `("gaussian", mu, sigma)`, or `("constant", c)`.
 A `("constant", c, :hollow)` / `("constant", c, :eye)` 3-tuple additionally zeros
 the diagonal / keeps only the diagonal (square matrices; mirrors upstream's
-`constant(value, hollow=True)` / `constant(value, eye=True)`).
+`constant(value, hollow=True)` / `constant(value, eye=True)`). `("fan_in_gaussian",)`
+draws `N(0, √(1/fan_in))` with `fan_in = shape[1]` (He-style).
 Mirrors the call surface of upstream's `DistributionGenerator.*` constructors.
 """
 function _init_array(shape::Tuple, rng, init)
@@ -68,10 +69,19 @@ function _init_array(shape::Tuple, rng, init)
         ary = fill(c, shape...)
         modifier = length(init) >= 3 ? init[3] : nothing
         return _apply_structure(ary, modifier)
+    elseif name == "fan_in_gaussian"
+        # He-style fan-in Gaussian: N(0, sqrt(1/fan_in)), fan_in = shape[1]
+        # (number of input units, i.e. rows). Mirrors upstream
+        # DistributionGenerator.fan_in_gaussian (distribution_generator.py:253).
+        length(shape) >= 2 ||
+            error("_init_array: fan_in_gaussian requires a ≥2-D shape, got $shape")
+        fan_in = shape[1]
+        sigma = sqrt(1.0 / fan_in)
+        return randn(rng, Float64, shape...) .* sigma
     else
         error(
             "_init_array: unsupported distribution `$name` " *
-            "(supported: uniform, gaussian/normal, constant)"
+            "(supported: uniform, gaussian/normal, constant, fan_in_gaussian)"
         )
     end
 end

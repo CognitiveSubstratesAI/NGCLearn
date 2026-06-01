@@ -46,6 +46,7 @@ include("components/input_encoders/poisson_cell.jl")
 include("components/other/var_trace.jl")
 include("models/pcn.jl")
 include("models/dc_snn.jl")
+include("models/sparse_coding.jl")
 
 # ── Exports ──────────────────────────────────────────────────────────────────
 export NGCLEARN_VERSION
@@ -74,5 +75,6 @@ export LIFCell,
     PoissonCell, VarTrace, TraceSTDPSynapse
 export PCN, process!, project
 export DC_SNN, norm!
+export SparseCoding
 
 end # module NGCLearn
