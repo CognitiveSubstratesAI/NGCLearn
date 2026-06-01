@@ -40,7 +40,7 @@ mutable struct IFCell <: JaxComponent
     name::String
     context_path::String
     args::Vector{Any}
-    kwargs::Dict{Symbol,Any}
+    kwargs::Dict{Symbol, Any}
 
     # Hyperparameters (scalars).
     n_units::Int
@@ -85,7 +85,7 @@ function IFCell(;
     lower_clamp_voltage::Bool=true,
     context_path::AbstractString="",
     args::Vector{Any}=Any[],
-    kwargs::Dict{Symbol,Any}=Dict{Symbol,Any}()
+    kwargs::Dict{Symbol, Any}=Dict{Symbol, Any}()
 )
     resist_m > 0.0 || error("IFCell: resist_m must be > 0 (got $resist_m)")
     batch_size = 1
