@@ -110,19 +110,23 @@ Two fixes got it there:
     (e.g. `max.(_v, c.v_min)`) un-rewritten. Now it recurses. This was the last
     dangling-reference gap.
 
-**Remaining limitation is world-age, NOT the parser.** The rewritten pure
-function is `eval`'d at `compile_process!` time; calling it in the SAME world-age
-hits Julia's "method too new" error. This is a PRE-EXISTING trait of the whole
-compiled-process path — NGCSimLib's own tests stop at "compiles successfully" for
-exactly this reason — and is orthogonal to the rewrite correctness. Real use
-(compile in one top-level scope, run later) or `Base.invokelatest` sidesteps it;
-a proper fix (RuntimeGeneratedFunctions, or building the runner without runtime
-`eval`) is a separate NGCSimLib task.
+**The world-age gap is now also fixed** (NGCSimLib `ed604ee`). `compile_process!`'s
+runner previously called the rewritten `cm.fn` directly, bypassing the
+`CompiledMethod` callable's `Base.invokelatest` wrapper, so a Process compiled and
+run in the same scope hit "method too new". The runner now calls each step via
+`cm(ctx; …)` (invokelatest), reaching the world the `fn` was `Core.eval`'d into.
 
-**Bottom line:** the eager path remains the verified ground truth for all
-component/model tests. The JIT rewrite is now correct and unblocked; wrapping a
-Process in `Reactant.@compile` is the next milestone, gated only on the world-age
-invocation mechanism, not on the parser.
+**Verified end-to-end:** a LIFCell `MethodProcess` now `compile_process!`s AND
+`run`s, and the compiled output matches plain eager dispatch **bit-for-bit**
+(v→v_reset, identical spikes) — the conformance property this decision required.
+NGCSimLib `test/test_process.jl` has the regression test (scalar hyperparam inside
+a broadcast, compiled-vs-eager equality).
+
+**Bottom line:** the eager path is still the ground truth the component/model
+suites assert against, but the JIT path is now correct AND runnable. The next
+(optional) milestone is `Reactant.@compile` of the runner for actual XLA
+tracing — `compile_with_reactant!` already exists for that; it's no longer
+blocked by either the parser or world-age.
 
 ---
 
