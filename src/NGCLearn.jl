@@ -39,6 +39,8 @@ include("components/neurons/graded/rate_cell.jl")
 # Synapses
 include("components/synapses/dense_synapse.jl")
 include("components/synapses/hebbian_synapse.jl")
+# Input encoders
+include("components/input_encoders/poisson_cell.jl")
 include("models/pcn.jl")
 
 # ── Exports ──────────────────────────────────────────────────────────────────
@@ -63,7 +65,8 @@ export sgd_init, sgd_step, adam_init, adam_step,
 # Components
 export LIFCell,
     GaussianErrorCell, RateCell, DenseSynapse,
-    HebbianSynapse, compute_update!, evolve!
+    HebbianSynapse, compute_update!, evolve!,
+    PoissonCell
 export PCN, process!, project
 
 end # module NGCLearn
