@@ -16,12 +16,22 @@ makedocs(;
     ),
     pages=[
         "Home" => "index.md",
+        "Overview" => "overview.md",
         "Getting Started" => [
             "Installation" => "getting_started/installation.md",
             "Quickstart" => "getting_started/quickstart.md"
         ],
         "Components" => "components.md",
+        "Modeling" => [
+            "Neuronal Cells" => "modeling/neurons.md",
+            "Synapses" => "modeling/synapses.md",
+            "Input Encoders & Traces" => "modeling/input_encoders.md"
+        ],
         "Models" => "models.md",
+        "Model Museum" => [
+            "Discriminative Predictive Coding" => "museum/pcn_discrim.md",
+            "Diehl & Cook Spiking Network" => "museum/snn_dc.md"
+        ],
         "Architecture & Design" => "architecture.md",
         "API Reference" => "api/index.md"
     ],

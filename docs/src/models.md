@@ -43,11 +43,10 @@ On a small deterministic classification task this drives the mean output error
 from ~0.7 to <0.001 over 60 epochs and classifies the training set 4/4.
 See `examples/02_pc_discrim_train.jl` for the full loop.
 
-```@docs
-PCN
-process!
-project
-```
+The full theory walkthrough — the generative/inference sub-networks, the PEM
+cycle, the free-energy objective, and the local Hebbian update equations — is
+in [Discriminative Predictive Coding](museum/pcn_discrim.md). API:
+[`PCN`](@ref), [`process!`](@ref), [`project`](@ref).
 
 ## DC-SNN — spiking STDP (`diehl_cook_snn`)
 
@@ -82,10 +81,10 @@ counts = process!(m, obs; adapt=true)  # 1×hid_dim excitatory spike counts
 Under drive, lateral inhibition produces the expected winner-take-all behavior:
 one excitatory unit dominates the spike counts while the rest are suppressed.
 
-```@docs
-DC_SNN
-norm!
-```
+For the full theory walkthrough — the LIF ODE, lateral-inhibition wiring,
+trace-STDP learning rule, and L1 weight normalization — together with the API
+docstrings for [`DC_SNN`](@ref) and [`norm!`](@ref), see the museum exhibit
+[The Diehl and Cook Spiking Neuronal Network](@ref).
 
 ## Writing your own model
 
