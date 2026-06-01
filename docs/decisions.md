@@ -77,10 +77,10 @@ fix-and-document, don't port faithfully.)
 
 ---
 
-## 4. The EAGER path is the ground truth; the Parser/Reactant JIT path is a
-##    separate, later phase — and needs an NGCSimLib parser feature
+## 4. The EAGER path is the ground truth; the Parser/Reactant JIT rewrite now
+##    works (world-age is the only remaining JIT-invocation gap)
 
-Date: 2026-05-31  ·  **(load-bearing — read before wrapping any cell in `@compile`)**
+Date: 2026-05-31, updated 2026-06-01  ·  **(load-bearing — read before wrapping any cell in `@compile`)**
 
 NGCSimLib's `@compilable` does two things: (1) defines the method normally so
 eager Julia dispatch works, and (2) registers the body Expr for the Parser to
@@ -93,28 +93,36 @@ constructed and stepped standalone — no Context, no GlobalState — and verifi
 against hand-computed dynamics. That is the ground-truth path and the contract
 the JIT path must later match bit-for-bit.
 
-**(2) does NOT yet work for cells with scalar hyperparameters**, and this is a
-real architectural finding, not an oversight:
+**(2) now WORKS for NGCLearn cells** (updated 2026-06-01). The Parser inlines
+scalar hyperparameter field accesses as trace-time constants — `c.tau_m` becomes
+the literal `10.0`, `c.thr` becomes `-52.0`, etc. — while compartment accesses
+become `ctx[key]`. Verified: `parse_method(LIFCell, :advance_state!)` produces a
+clean `_pure_LIFCell_advance_state!(ctx; dt, t)` with **zero** dangling receiver
+references, and `compile_process!` succeeds on it.
 
-  - The Parser's `ContextTransformer` only rewrites a `c.field` chain when it
-    resolves to a `Compartment` (NGCSimLib ContextTransformer.jl:62 —
-    `val isa Compartment ? val : nothing`). Scalar fields like `c.tau_m` resolve
-    to `nothing` and are **left as literal `c.tau_m`**.
-  - But the rewritten pure function has signature `(ctx; kwargs...)` — the
-    receiver `c` is gone. A surviving `c.tau_m` references an undefined binding.
-  - NGCSimLib's own example components only ever touched compartments + kwargs
-    (e.g. `dt`, `leak` passed as kwargs), so this shape was never exercised.
+Two fixes got it there:
+  - NGCSimLib's `ContextTransformer` gained the scalar-inline branch (resolve the
+    field value off the instance at parse time, splice it as a literal) — this
+    pre-dated 2026-06-01 and was already in place when re-checked.
+  - The broadcast-recursion fix (NGCSimLib `2c424fe`, 2026-06-01): an explicit
+    broadcast `f.(args)` shares AST head `:.` with field access, so the
+    transformer skipped its subtree and left `c.field` nested inside a broadcast
+    (e.g. `max.(_v, c.v_min)`) un-rewritten. Now it recurses. This was the last
+    dangling-reference gap.
 
-The fix belongs in NGCSimLib, not here: teach the Parser to **inline scalar
-hyperparameter field accesses as trace-time constants** (read `getproperty(c, f)`
-off the instance at compile time and splice the literal value), since they are
-immutable for the life of a compiled process. That mirrors how Reactant already
-treats string ctx keys as compile-time constants (NGCSimLib decisions #9).
+**Remaining limitation is world-age, NOT the parser.** The rewritten pure
+function is `eval`'d at `compile_process!` time; calling it in the SAME world-age
+hits Julia's "method too new" error. This is a PRE-EXISTING trait of the whole
+compiled-process path — NGCSimLib's own tests stop at "compiles successfully" for
+exactly this reason — and is orthogonal to the rewrite correctness. Real use
+(compile in one top-level scope, run later) or `Base.invokelatest` sidesteps it;
+a proper fix (RuntimeGeneratedFunctions, or building the runner without runtime
+`eval`) is a separate NGCSimLib task.
 
-**Phasing (mirrors NGCSimLib's own substrate-first/Reactant-later sequence):**
-Phase A (this work) ships eager, hand-verified cells. The JIT path lands after
-the NGCSimLib parser enhancement, with the eager path as its conformance oracle.
-Until then, do not claim a cell is Reactant-traceable through a Process.
+**Bottom line:** the eager path remains the verified ground truth for all
+component/model tests. The JIT rewrite is now correct and unblocked; wrapping a
+Process in `Reactant.@compile` is the next milestone, gated only on the world-age
+invocation mechanism, not on the parser.
 
 ---
 
