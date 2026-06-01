@@ -14,6 +14,7 @@ using Test
     include("test_optim.jl")
     include("test_hebbian_synapse.jl")
     include("test_poisson_cell.jl")
+    include("test_bernoulli_cell.jl")
     include("test_var_trace.jl")
     include("test_trace_stdp_synapse.jl")
     include("test_pcn_integration.jl")

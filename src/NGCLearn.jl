@@ -43,6 +43,7 @@ include("components/synapses/hebbian_synapse.jl")
 include("components/synapses/trace_stdp_synapse.jl")
 # Input encoders
 include("components/input_encoders/poisson_cell.jl")
+include("components/input_encoders/bernoulli_cell.jl")
 # Other functional nodes (traces, kernels)
 include("components/other/var_trace.jl")
 include("models/pcn.jl")
@@ -73,7 +74,7 @@ export sgd_init, sgd_step, adam_init, adam_step,
 export LIFCell, IFCell,
     GaussianErrorCell, RateCell, DenseSynapse,
     HebbianSynapse, compute_update!, evolve!,
-    PoissonCell, VarTrace, TraceSTDPSynapse
+    PoissonCell, BernoulliCell, VarTrace, TraceSTDPSynapse
 export PCN, process!, project
 export DC_SNN, norm!
 export SparseCoding
