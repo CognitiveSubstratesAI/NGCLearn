@@ -41,6 +41,8 @@ include("components/synapses/dense_synapse.jl")
 include("components/synapses/hebbian_synapse.jl")
 # Input encoders
 include("components/input_encoders/poisson_cell.jl")
+# Other functional nodes (traces, kernels)
+include("components/other/var_trace.jl")
 include("models/pcn.jl")
 
 # ── Exports ──────────────────────────────────────────────────────────────────
@@ -66,7 +68,7 @@ export sgd_init, sgd_step, adam_init, adam_step,
 export LIFCell,
     GaussianErrorCell, RateCell, DenseSynapse,
     HebbianSynapse, compute_update!, evolve!,
-    PoissonCell
+    PoissonCell, VarTrace
 export PCN, process!, project
 
 end # module NGCLearn
