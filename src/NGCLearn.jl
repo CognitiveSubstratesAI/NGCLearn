@@ -33,6 +33,7 @@ include("components/jax_component.jl")
 # ── Components ───────────────────────────────────────────────────────────────
 # Spiking neurons
 include("components/neurons/spiking/lif_cell.jl")
+include("components/neurons/spiking/if_cell.jl")
 # Graded (rate-coded / error) neurons
 include("components/neurons/graded/gaussian_error_cell.jl")
 include("components/neurons/graded/rate_cell.jl")
@@ -69,7 +70,7 @@ export sgd_init, sgd_step, adam_init, adam_step,
     get_opt_init_fn, get_opt_step_fn
 
 # Components
-export LIFCell,
+export LIFCell, IFCell,
     GaussianErrorCell, RateCell, DenseSynapse,
     HebbianSynapse, compute_update!, evolve!,
     PoissonCell, VarTrace, TraceSTDPSynapse
