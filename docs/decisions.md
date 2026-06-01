@@ -122,11 +122,18 @@ run in the same scope hit "method too new". The runner now calls each step via
 NGCSimLib `test/test_process.jl` has the regression test (scalar hyperparam inside
 a broadcast, compiled-vs-eager equality).
 
-**Bottom line:** the eager path is still the ground truth the component/model
-suites assert against, but the JIT path is now correct AND runnable. The next
-(optional) milestone is `Reactant.@compile` of the runner for actual XLA
-tracing — `compile_with_reactant!` already exists for that; it's no longer
-blocked by either the parser or world-age.
+**Reactant XLA tracing now works on a real cell too** (2026-06-01). A LIFCell
+`MethodProcess` `compile_with_reactant!`s (Reactant 0.2.262, `@compile` of the
+spliced runner) and `run`s, producing output IDENTICAL to eager — verified
+bit-for-bit (`v=[-60,-60,-60]`, `s=[1,1,1]`). So the full pipeline is closed:
+eager (ground truth) → parser rewrite → `compile_process!` (runs) →
+`compile_with_reactant!` (XLA-traced), all numerically equal. `test/test_jit_integration.jl`
+guards it (Reactant is a test-only dep; skippable via `NGCLEARN_SKIP_JIT=1`).
+
+**Bottom line:** the eager path is the ground truth the component/model suites
+assert against; the JIT path (eager-spliced AND Reactant-traced) is now correct,
+runnable, and conformance-tested against eager. The parser, world-age, and
+XLA-tracing milestones are all closed.
 
 ---
 
