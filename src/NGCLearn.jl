@@ -22,6 +22,8 @@ const NGCLEARN_VERSION = v"0.1.0"
 include("utils/diffeq/ode_utils.jl")
 # Activations + thresholds (identity/tanh/relu/sigmoid + threshold_{soft,cauchy})
 include("utils/model_utils.jl")
+# Surrogate spike-derivative estimators (secant LIF — used by SLIFCell / bfa_snn).
+include("utils/surrogate_fx.jl")
 # Gradient-style optimizers (SGD + Adam) — consumed by HebbianSynapse.
 include("utils/optim/optim.jl")
 
@@ -34,6 +36,7 @@ include("components/jax_component.jl")
 # Spiking neurons
 include("components/neurons/spiking/lif_cell.jl")
 include("components/neurons/spiking/if_cell.jl")
+include("components/neurons/spiking/slif_cell.jl")
 # Graded (rate-coded / error) neurons
 include("components/neurons/graded/gaussian_error_cell.jl")
 include("components/neurons/graded/rate_cell.jl")
@@ -63,6 +66,9 @@ export create_function,
     threshold_soft, threshold_cauchy,
     normalize_matrix
 
+# Surrogate spike-derivative estimators
+export secant_spike_fx, secant_d_spike_fx, secant_lif_estimator
+
 # Component base + shared verbs
 export JaxComponent, advance_state!, reset_state!, make_prng_key
 
@@ -71,7 +77,7 @@ export sgd_init, sgd_step, adam_init, adam_step,
     get_opt_init_fn, get_opt_step_fn
 
 # Components
-export LIFCell, IFCell,
+export LIFCell, IFCell, SLIFCell,
     GaussianErrorCell, RateCell, DenseSynapse,
     HebbianSynapse, compute_update!, evolve!,
     PoissonCell, BernoulliCell, VarTrace, TraceSTDPSynapse
