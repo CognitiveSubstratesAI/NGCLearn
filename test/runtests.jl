@@ -21,5 +21,6 @@ using Test
     include("test_pcn_integration.jl")
     include("test_dc_snn_integration.jl")
     include("test_sparse_coding_integration.jl")
+    include("test_bfa_snn_integration.jl")
     include("test_jit_integration.jl")
 end

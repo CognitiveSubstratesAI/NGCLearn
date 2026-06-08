@@ -52,6 +52,7 @@ include("components/other/var_trace.jl")
 include("models/pcn.jl")
 include("models/dc_snn.jl")
 include("models/sparse_coding.jl")
+include("models/bfa_snn.jl")
 
 # ── Exports ──────────────────────────────────────────────────────────────────
 export NGCLEARN_VERSION
@@ -84,5 +85,6 @@ export LIFCell, IFCell, SLIFCell,
 export PCN, process!, project
 export DC_SNN, norm!
 export SparseCoding
+export BFA_SNN
 
 end # module NGCLearn
